@@ -9,6 +9,9 @@
 #include <queue.h>
 #include <task.h>
 #include "morse.c"
+#define RED_LED_PIN           14
+#define LED1                  RED_LED_PIN
+#define RGB_LED_G             19
 
 #include "tkjhat/sdk.h"
   
@@ -61,6 +64,8 @@ void update_last_marks(char *buffer, char new_mark);
 void update_last_marks_client(char *buffer, char new_mark);
 void check_message_end_client(char *buffer);
 void detect_moves(char *buffer, struct imu_data *data);
+void init_led(void);
+void toggle_led(void);
 
 void update_lines_to_buffer(char* buffer, char* line_buffer){
     int start_point = 0;
@@ -135,11 +140,18 @@ void detect_moves(char *buffer, struct imu_data *data) {
     if (data->gx > 100) {
         update_buffer(buffer, '.');
         puts("Detected .");
-        
+        toggle_led();
+        sleep_ms(400);
+        toggle_led();
+        sleep_ms(150);
     }
     else if (data->gx < -100) {
         update_buffer(buffer, '-');
         puts("Detected -");
+        toggle_led();
+        sleep_ms(800);
+        toggle_led();
+        sleep_ms(150);
         
     }
     else if (data->gy > 100) {
@@ -205,6 +217,12 @@ static void lcd_task(void *arg) {
                 // Testing if previous state was READ_IMU to decode the message
                 //if (previousState == READ_IMU) {
                     morsebuffer_to_text(mark_buffer, decoded_text);
+                for (int i = 0; i < 3; i++) {
+                    toggle_led();
+                    sleep_ms(300);
+                    toggle_led();
+                    sleep_ms(120);
+    }
                     sprintf(text_buffer, "Decoded message: %s\n", decoded_text);
                     puts(text_buffer);
                 //}
@@ -271,7 +289,7 @@ static void serial_task(void *arg) {
     // the data is coming from.
     (void)arg;
     
-    char *line = text_buffer;
+    char line[INPUT_BUFFER_SIZE];
     size_t index = 0;
     
     while (1){
@@ -279,7 +297,6 @@ static void serial_task(void *arg) {
             int c = getchar_timeout_us(0);
             if (c != PICO_ERROR_TIMEOUT){
                 if (c == '\r') {
-                    update_last_marks_client(last_marks, c);
                     continue;
                 }
                 if (c == '\n'){
@@ -294,6 +311,7 @@ static void serial_task(void *arg) {
 
                 }
                 else if(index < INPUT_BUFFER_SIZE - 1){
+                    update_last_marks_client(last_marks, c);
                     line[index++] = (char)c;
                 }
                 else { //Overflow: print and restart the buffer with the new character. 

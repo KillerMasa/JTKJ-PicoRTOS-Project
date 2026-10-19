@@ -63,11 +63,11 @@ static void sensorTask (void *arg){
             
         }
         //Send also the debug log to the ACM0
-        if (usb_serial_connected()) {
-            snprintf(buf, BUFFER_SIZE,"temp:%d, light:%d\n", temp, lux);
-            usb_serial_print(buf);
-            usb_serial_flush();
-        }
+        //if (usb_serial_connected()) {
+        snprintf(buf, BUFFER_SIZE,"temp:%d, light:%d\n", temp, lux);
+        usb_serial_print(buf);
+        usb_serial_flush();
+        //}
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 

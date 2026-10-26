@@ -555,26 +555,16 @@ uint32_t veml6030_read_light() {
     //            Kerro arvo sopivalla kertoimella huomioiden 100 ms integraatioaika ja vahvistus 1/8
     //            käyttäen VEML6030-sovellussuunnitteluasiakirjan sivun 5 tietoja:https://www.vishay.com/docs/84367/designingveml6030.pdf
     //            Lopuksi tallenna arvo muuttujaan luxVal_uncorrected.
-    uint32_t luxVal_uncorrected = 0;
+    init_i2c(DEFAULT_I2C_SDA_PIN, DEFAULT_I2C_SCL_PIN);
     uint8_t rxBuffer[2]; 
     uint8_t txBuffer[1];
     txBuffer[0] = VEML6030_ALS_REG;
-    if(i2c_write_blocking(i2c_default, VEML6030_I2C_ADDRESS , txBuffer, 1, true) != PICO_ERROR_GENERIC) {
-        if(i2c_read_blocking(i2c_default, VEML6030_I2C_ADDRESS, rxBuffer, 2, false) != PICO_ERROR_GENERIC) {                
-            uint16_t value = (uint16_t)rxBuffer[1] << 8;
-            uint16_t value1 = rxBuffer[0];
-            luxVal_uncorrected = (value + value1) * 0.0576;
-
-           //printf("%f", luxVal_uncorrected);
-        }
-        else {
-            printf("I2C Bus fault\n");
-        }
-    }
-    else {
-        printf("I2C Bus fault\n");
-    }
-
+    i2c_write_blocking(i2c_default, VEML6030_I2C_ADDRESS , txBuffer, 1, true);
+    i2c_read_blocking(i2c_default, VEML6030_I2C_ADDRESS, rxBuffer, 2, false);               
+            uint16_t value = (rxBuffer[0] + (rxBuffer[1] << 8))*0.0576;
+            uint32_t luxVal_uncorrected = 0;
+            luxVal_uncorrected = value;
+            
     if (luxVal_uncorrected>1000){
         // Polynomial is pulled from pg 10 of the datasheet. 
         // See https://github.com/sparkfun/SparkFun_Ambient_Light_Sensor_Arduino_Library/blob/efde0817bd6857863067bd1653a2cfafe6c68732/src/SparkFun_VEML6030_Ambient_Light_Sensor.cpp#L409

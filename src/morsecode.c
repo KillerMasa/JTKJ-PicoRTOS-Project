@@ -1,5 +1,9 @@
 // Joona Myllymäki, Leevi Astikainen, Ursa Muranen
 // Pisteiden jaottelu 2,2,2
+
+// Alkuun tekoälyn käytöstä, googlen geminiä (flash) käytettiin paikoin avustamaan koodin kasaamista ja tietyt toteutustavat ovat pohjautettu tekoälyn ehdottamiin suorituksiin.
+// Kesketyskäsittelijää tehdessä gemini tarjosi toteutusta jossa käytettiin "static volatile bool btnx_pressed" lippumuuttujaa jolla tieto napinpainalluksesta pystytään viemään eteenpäin.
+// Tätä sitten sovellettiin toimimaan "imu task" kanssa.
 #include <stdio.h>
 #include <string.h>
 
@@ -118,7 +122,7 @@ static void serial_task(void *pvParameters) {
                 message_buffer[buf_idx++] = '\n';
                 message_buffer[buf_idx] = '\0';
 
-                // Tulostetaan koko viesti sarjaporttiin kerralla
+                // Tulostetaan koko viesti sarjaporttiin
                 printf("%s", message_buffer);
                 fflush(stdout);
 
